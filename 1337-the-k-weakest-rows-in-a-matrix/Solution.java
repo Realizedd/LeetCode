@@ -12,29 +12,20 @@ public class Solution {
         return firstIndex < secondIndex;
     }
 
-    private boolean contains(int index, int[] indexes) {
-        for (int i : indexes) {
-            if (i == index) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     public int[] kWeakestRows(int[][] mat, int k) {
         int[] indexes = new int[k];
 
         for (int i = 0; i < k; i++) {
             int weakest = 0;
 
-            for (int j = 0; j < mat.length; j++) {
-                if (!contains(j, indexes) && isWeaker(j, weakest, mat[j], mat[weakest])) {
+            for (int j = 1; j < mat.length; j++) {
+                if (mat[j][0] != 2 && isWeaker(j, weakest, mat[j], mat[weakest])) {
                     weakest = j;
                 }
             }
 
             indexes[i] = weakest;
+            mat[weakest][0] = 2;
         }
         
         return indexes;
