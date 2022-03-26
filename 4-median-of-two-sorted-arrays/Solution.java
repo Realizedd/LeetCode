@@ -14,14 +14,6 @@ public class Solution {
             } else if (k < n) {
                 merged[i] = nums2[k++];
             }
-
-            if (i == (m + n) / 2) {
-
-            }
-        }
-
-        for (int i = 0; i < m + n; i++) {
-            System.out.println(merged[i]);
         }
 
         int midpoint = (m + n) / 2;
