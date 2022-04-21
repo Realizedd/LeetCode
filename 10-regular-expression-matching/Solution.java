@@ -1,52 +1,71 @@
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.Scanner;
 
 public class Solution {
 
-    public boolean isMatch(String s, String p) {
-        int j = 0, c = 0;
+    class Group {
 
-        for (int i = 0; i < s.length(); i++) {
-            char cur = s.charAt(i);
-            char curPattern = p.charAt(j);
+        private char c;
+        private boolean extending;
 
-            if (p.charAt(j) == '*') {
-                if (cur != p.charAt(j - 1) && p.charAt(j - 1) != '.') {
-                    if (j + 1 < p.length()) {
-                        j++;
-                        i--;    
-                    } else {
-                        System.out.println("No more characters remaining in pattern");
-                        return false;
-                    }
+        Group(char c) {
+            this.c = c;
+        }
+
+        void setExtending() {
+            extending = true;
+        }
+
+        int validate(int start, String s) {
+            if (extending) {
+                while (start >= 0 && (c == '.' || s.charAt(start) == c)) {
+                    start--;
                 }
 
-                c++;
-                continue;
+                return start;
+            } else {
+                return (c == '.' || s.charAt(start) == c) ? --start : -2;
             }
-            
-            System.out.println(cur + " - " + curPattern);
+        }
+    }
 
-            if (cur != curPattern && curPattern != '.') {
-                System.out.println("Character does not match 1-to-1");
+    public boolean isMatch(String s, String p) {
+        LinkedList<Group> groups = new LinkedList<>();
+        Group prev = null;
+
+        for (int i = 0; i < p.length(); i++) {
+            char cur = p.charAt(i);
+
+            if (cur == '*') {
+                if (prev != null) {
+                    prev.setExtending();
+                }
+            } else {
+                groups.add(prev = new Group(cur));
+            }
+        }
+
+        int index = s.length() - 1;
+        Iterator<Group> iterator = groups.descendingIterator();
+
+        while (iterator.hasNext()) {
+            Group group = iterator.next();
+
+            // Not a match as the entire string has already been validated but there is still a group to process.
+            if (index < 0 && !group.extending) {
+                System.out.println(1);
                 return false;
             }
 
-            if (j + 1 < p.length()) {
-                j++;
-            } else if (i + 1 != s.length()) {
-                System.out.println("Character does not match 1-to-1 and this is not the last iteration");
+            if ((index = group.validate(index, s)) == -2) {
+                System.out.println(2);
                 return false;
             }
-
-            c++;
         }
 
-        if (c < p.length()) {
-            System.out.println("Does not match the whole pattern");
-            return false;
-        }
-
-        return true;
+        // Return true if the groups have validated the entire string.
+        return index < 0;
     }
 
     public static void main(String[] args) {
