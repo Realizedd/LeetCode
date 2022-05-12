@@ -3,10 +3,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 
 public class Solution {
 
@@ -21,7 +23,7 @@ public class Solution {
                 char val = board[row][col];
 
                 if (val == '.') {
-                    Set<Character> set = new HashSet<>();
+                    Set<Character> set = new LinkedHashSet<>();
                     set.add('1');
                     set.add('2');
                     set.add('3');
@@ -63,36 +65,41 @@ public class Solution {
             }
         }
 
-        while (!possibleValues.isEmpty()) {
-            for (int row = 0; row < board.length; row++) {
-                for (int col = 0; col < board.length; col++) {
-                    char val = board[row][col];
+        
+        for (int row = 0; row < board.length; row++) {
+            for (int col = 0; col < board.length; col++) {
+                char val = board[row][col];
 
-                    if (val == '.') {
-                        continue;
-                    }
+                if (val == '.') {
+                    continue;
+                }
+                
+                List<Set<Character>> rList = rowMap.get(row);
                     
-                    List<Set<Character>> rList = rowMap.get(row);
-                        
-                    if (rList != null) {
-                        rList.forEach(set -> set.remove(val));
-                    }
+                if (rList != null) {
+                    rList.forEach(set -> set.remove(val));
+                }
 
-                    List<Set<Character>> cList = colMap.get(col);
-                        
-                    if (cList != null) {
-                        cList.forEach(set -> set.remove(val));
-                    }
+                List<Set<Character>> cList = colMap.get(col);
+                    
+                if (cList != null) {
+                    cList.forEach(set -> set.remove(val));
+                }
 
-                    int sq = 3 * (row / 3) + col / 3;
-                    List<Set<Character>> sList = sqMap.get(sq);
-                        
-                    if (sList != null) {
-                        sList.forEach(set -> set.remove(val));
-                    }
+                int sq = 3 * (row / 3) + col / 3;
+                List<Set<Character>> sList = sqMap.get(sq);
+                    
+                if (sList != null) {
+                    sList.forEach(set -> set.remove(val));
                 }
             }
+        }
 
+        boolean changed = true;
+
+        // Reduce possibilities as much as possible
+        while (!possibleValues.isEmpty() && changed) {
+            changed = false;
             Iterator<Map.Entry<String, Set<Character>>> iterator = possibleValues.entrySet().iterator();
 
             while (iterator.hasNext()) {
@@ -101,14 +108,94 @@ public class Solution {
                 System.out.println(entry.getKey() + ": " + entry.getValue());
 
                 if (entry.getValue().size() <= 1) {
+                    changed = true;
                     iterator.remove();
 
                     if (!entry.getValue().isEmpty()) {
-                        board[Character.getNumericValue(entry.getKey().charAt(0))][Character.getNumericValue(entry.getKey().charAt(1))] = entry.getValue().iterator().next();
+                        int row = Character.getNumericValue(entry.getKey().charAt(0));
+                        int col = Character.getNumericValue(entry.getKey().charAt(1));
+                        char val = entry.getValue().iterator().next();
+                        board[row][col] = val;
+
+                        List<Set<Character>> rList = rowMap.get(row);
+                            
+                        if (rList != null) {
+                            rList.forEach(set -> set.remove(val));
+                        }
+
+                        List<Set<Character>> cList = colMap.get(col);
+                            
+                        if (cList != null) {
+                            cList.forEach(set -> set.remove(val));
+                        }
+
+                        int sq = 3 * (row / 3) + col / 3;
+                        List<Set<Character>> sList = sqMap.get(sq);
+
+                        if (sList != null) {
+                            sList.forEach(set -> set.remove(val));
+                        }
                     }
                 }
             }
         }
+
+        solve(board, new HashMap<>(), possibleValues);
+    }
+
+    public boolean solve(final char[][] board, final Map<String, Character> filled, final Map<String, Set<Character>> possibleValues) {
+        // for (int i = 0; i < 9; i++) {
+        //     System.out.println(Arrays.toString(board[i]));
+        // }
+        // System.out.println();
+        // try {
+        //     Thread.sleep(500);
+        // } catch (InterruptedException e) {
+        //     // TODO Auto-generated catch block
+        //     e.printStackTrace();
+        // }
+        if (filled.size() == possibleValues.size()) {
+            return true;
+        }
+
+        for (Map.Entry<String, Set<Character>> entry : possibleValues.entrySet()) {                
+            if (filled.containsKey(entry.getKey())) {
+                continue;
+            }
+
+            int row = Character.getNumericValue(entry.getKey().charAt(0));
+            int col = Character.getNumericValue(entry.getKey().charAt(1));
+
+            for (char val : entry.getValue()) {
+                if (filled.containsKey(entry.getKey()) && filled.get(entry.getKey()) == val) {
+                    continue;
+                }
+
+                if (isValid(board, row, col, val)) {
+                    board[row][col] = val;
+                    filled.put(entry.getKey(), val);
+        
+                    if (solve(board, filled, possibleValues)) {
+                        return true;
+                    } else {
+                        board[row][col] = '.';
+                        filled.remove(entry.getKey());
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean isValid(char[][] board, int row, int col, char c){
+        int regionRow = 3 * (row / 3);  //region start row
+        int regionCol = 3 * (col / 3);    //region start col
+        for (int i = 0; i < 9; i++) {
+            if (board[i][col] == c) return false; //check row
+            if (board[row][i] == c) return false; //check column
+            if (board[regionRow + i / 3][regionCol + i % 3] == c) return false; //check 3*3 block
+        }
+        return true;
     }
 
     public static void main(String[] args) {
