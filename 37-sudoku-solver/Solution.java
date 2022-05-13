@@ -1,6 +1,5 @@
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -8,7 +7,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 
 public class Solution {
 
@@ -105,7 +103,7 @@ public class Solution {
             while (iterator.hasNext()) {
                 Map.Entry<String, Set<Character>> entry = iterator.next();
     
-                System.out.println(entry.getKey() + ": " + entry.getValue());
+                // System.out.println(entry.getKey() + ": " + entry.getValue());
 
                 if (entry.getValue().size() <= 1) {
                     changed = true;
@@ -140,48 +138,32 @@ public class Solution {
             }
         }
 
-        solve(board, new HashMap<>(), possibleValues);
+        solve(board, 0, 0, possibleValues);
     }
 
-    public boolean solve(final char[][] board, final Map<String, Character> filled, final Map<String, Set<Character>> possibleValues) {
-        // for (int i = 0; i < 9; i++) {
-        //     System.out.println(Arrays.toString(board[i]));
-        // }
-        // System.out.println();
-        // try {
-        //     Thread.sleep(500);
-        // } catch (InterruptedException e) {
-        //     // TODO Auto-generated catch block
-        //     e.printStackTrace();
-        // }
-        if (filled.size() == possibleValues.size()) {
+    public boolean solve(final char[][] board, int row, int col, final Map<String, Set<Character>> possibleValues) {
+        if (col == 9) {
+            col = 0;
+            row++;
+        }
+
+        if (row == 9) {
             return true;
         }
 
-        for (Map.Entry<String, Set<Character>> entry : possibleValues.entrySet()) {                
-            if (filled.containsKey(entry.getKey())) {
-                continue;
-            }
-
-            int row = Character.getNumericValue(entry.getKey().charAt(0));
-            int col = Character.getNumericValue(entry.getKey().charAt(1));
-
-            for (char val : entry.getValue()) {
-                if (filled.containsKey(entry.getKey()) && filled.get(entry.getKey()) == val) {
-                    continue;
-                }
-
-                if (isValid(board, row, col, val)) {
-                    board[row][col] = val;
-                    filled.put(entry.getKey(), val);
+        if (possibleValues.get(row + "" + col) == null) {
+            return solve(board, row, col + 1, possibleValues);
+        }
         
-                    if (solve(board, filled, possibleValues)) {
-                        return true;
-                    } else {
-                        board[row][col] = '.';
-                        filled.remove(entry.getKey());
-                    }
+        for (char val : possibleValues.get(row + "" + col)) {
+            if (isValid(board, row, col, val)) {
+                board[row][col] = val;
+    
+                if (solve(board, row, col + 1, possibleValues)) {
+                    return true;
                 }
+
+                board[row][col] = '.';
             }
         }
         return false;
@@ -209,7 +191,7 @@ public class Solution {
                 {'.','.','.','8','.','3','.','2','.'},
                 {'.','.','.','.','.','.','.','.','6'},
                 {'.','.','.','2','7','5','9','.','.'}
-            };
+        };
 
         for (int i = 0; i < 9; i++) {
             System.out.println(Arrays.toString(board[i]));
