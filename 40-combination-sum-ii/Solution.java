@@ -1,12 +1,10 @@
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.LinkedList;
 import java.util.List;
 
 public class Solution {
 
-    // TODO: VERY INEFFICIENT BRUTE FORCE SOLUTION - Work on optimizing
-    private boolean findSum(List<List<Integer>> ans, int[] candidates, int target, int index, LinkedList<Integer> cur, int sum) {
+    private boolean findSum(List<List<Integer>> ans, int[] candidates, int target, int index, List<Integer> cur, int sum) {
         if (sum == target) {
             return true;
         } else if (sum > target) {
@@ -14,43 +12,45 @@ public class Solution {
         }
 
         for (int i = index; i < candidates.length; i++) {
+            if (i > index && candidates[i] == candidates[i - 1]) {
+                continue;
+            }
+
             int c = candidates[i];
-            int x = 1;
 
-            while (i < candidates.length - 1 && candidates[i] == candidates[i + 1]) {
-                x++;
-                i++;
+            if (sum + c > target) {
+                break;
+            }
+            
+            cur.add(c);
+
+            if (findSum(ans, candidates, target, i + 1, cur, sum + c)) {
+                List<Integer> sol = new ArrayList<>(cur.size());
+                
+                for (int n : cur) {
+                    sol.add(n);
+                }
+                
+                ans.add(sol);
             }
 
-            for (int k = 1; k <= x; k++) {
-                for (int j = 0; j < k; j++) {
-                    cur.addLast(c);
-                }
-
-                if (findSum(ans, candidates, target, i + 1, cur, sum + c * k)) {
-                    ans.add(new ArrayList<>(cur));
-                }
-
-                for (int j = 0; j < k; j++) {
-                    cur.removeLast();
-                }
-            }
+            cur.remove(cur.size() - 1);
         }
 
         return false;
     }
     
     public List<List<Integer>> combinationSum2(int[] candidates, int target) {
-        List<List<Integer>> ans = new LinkedList<>();
+        List<List<Integer>> ans = new ArrayList<>();
         Arrays.sort(candidates);
-        findSum(ans, candidates, target, 0, new LinkedList<>(), 0);
+        findSum(ans, candidates, target, 0, new ArrayList<>(), 0);
         return ans;
     }
 
     public static void main(String[] args) {
     Solution solution = new Solution();
-       int[] candidates = {10,1,2,7,6,1,5};
-       int target = 8;
+       int[] candidates = {2,5,2,1,2};
+       int target = 5;
        System.out.println(solution.combinationSum2(candidates, target));
     }
 }
