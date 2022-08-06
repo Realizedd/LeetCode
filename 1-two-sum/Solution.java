@@ -23,6 +23,18 @@ public class Solution {
         return ans;
     }   
 
+    public int[] twoSumBruteForce(int[] nums, int target) {
+        for (int i = 0; i < nums.length; i++) {
+            for (int j = i + 1; i < nums.length; j++) {
+                if (nums[i] + nums[j] == target) {
+                    return new int[] {i, j};
+                }
+            }    
+        }
+
+        return new int[] {-1, -1};
+    }
+
     public static void main(String[] args) {
         int[] arr = {3,2,4};
         Solution solution = new Solution();
