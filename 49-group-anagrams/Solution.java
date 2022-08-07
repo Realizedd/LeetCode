@@ -1,68 +1,56 @@
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Solution {
 
-    public static int compare(int[] a, int[] b) {
+    private static boolean equals(int[] a, int[] b) {
         for (int i = 0; i < a.length; i++) {
             if (a[i] != b[i]) {
-                return a[i] - b[i];
+                return false;
             }
         }
 
-        return 0;
+        return true;
     }
 
-    private class StringWrapper implements Comparable<StringWrapper> {
+    private class Occurrences {
 
-        private String[] strs;
-        private int index;
         private int[] occurrences = new int[26];
 
-        StringWrapper(String[] strs, int index) {
-            this.strs = strs;
-            this.index = index;
-
-            for (char c : strs[index].toCharArray()) {
+        Occurrences(char[] arr) {
+            for (char c : arr) {
                 occurrences[c - 'a']++;
             }
         }
 
         @Override
-        public int compareTo(StringWrapper other) {
-            int value = Integer.compare(toString().length(), other.toString().length());
-            return value == 0 ? Solution.compare(occurrences, other.occurrences) : value;
+        public boolean equals(Object obj) {
+            if (!(obj instanceof Occurrences)) {
+                return false;
+            }
+
+            return obj == this || Solution.equals(occurrences, ((Occurrences) obj).occurrences);
         }
 
         @Override
-        public String toString() {
-            return strs[index];
+        public int hashCode() {
+            return Arrays.hashCode(occurrences);
         }
     }
 
     public List<List<String>> groupAnagrams(String[] strs) {
-        StringWrapper[] arr = new StringWrapper[strs.length];
+        Map<Occurrences, List<String>> occurrences = new HashMap<>();
 
         for (int i = 0; i < strs.length; i++) {
-            arr[i] = new StringWrapper(strs, i);
+            List<String> list = occurrences.computeIfAbsent(new Occurrences(strs[i].toCharArray()), res -> new ArrayList<>());
+            list.add(strs[i]);
         }
-
-        Arrays.sort(arr);
 
         List<List<String>> ans = new ArrayList<>();
-        StringWrapper prev = null;
-        List<String> answer = null;
-
-        for (StringWrapper wrapper : arr) {
-            if (prev == null || prev.compareTo(wrapper) != 0) {
-                ans.add(answer = new ArrayList<>());
-            }
-
-            answer.add(wrapper.toString());
-            prev = wrapper;
-        }
-
+        ans.addAll(occurrences.values());
         return ans;
     }
 
