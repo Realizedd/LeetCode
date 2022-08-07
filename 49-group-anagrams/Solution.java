@@ -1,60 +1,74 @@
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 public class Solution {
-    
-    private boolean equals(int[] a, int[] b) {
+
+    public static int compare(int[] a, int[] b) {
         for (int i = 0; i < a.length; i++) {
             if (a[i] != b[i]) {
-                return false;
+                return a[i] - b[i];
             }
         }
 
-        return true;
+        return 0;
     }
-    
+
+    private class StringWrapper implements Comparable<StringWrapper> {
+
+        private String[] strs;
+        private int index;
+        private int[] occurrences = new int[26];
+
+        StringWrapper(String[] strs, int index) {
+            this.strs = strs;
+            this.index = index;
+
+            for (char c : strs[index].toCharArray()) {
+                occurrences[c - 'a']++;
+            }
+        }
+
+        @Override
+        public int compareTo(StringWrapper other) {
+            int value = Integer.compare(toString().length(), other.toString().length());
+            return value == 0 ? Solution.compare(occurrences, other.occurrences) : value;
+        }
+
+        @Override
+        public String toString() {
+            return strs[index];
+        }
+    }
+
     public List<List<String>> groupAnagrams(String[] strs) {
-        Map<Integer, List<Integer>> sameLengths = new HashMap<>();
-        int[][] map = new int[strs.length][26];
+        StringWrapper[] arr = new StringWrapper[strs.length];
 
         for (int i = 0; i < strs.length; i++) {
-            String s = strs[i];
-            List<Integer> list = sameLengths.computeIfAbsent(s.length(), res -> new ArrayList<>());
-            list.add(i);
-
-            for (int j = 0; j < s.length(); j++) {
-                map[i][s.charAt(j) - 'a']++;
-            }
+            arr[i] = new StringWrapper(strs, i);
         }
+
+        Arrays.sort(arr);
 
         List<List<String>> ans = new ArrayList<>();
+        StringWrapper prev = null;
+        List<String> answer = null;
 
-        for (int i = 0; i < strs.length; i++) {
-            List<String> answer = new ArrayList<>();
-            String s = strs[i];
-
-            List<Integer> list = sameLengths.get(s.length());
-            Iterator<Integer> iterator = list.iterator();
-
-            while (iterator.hasNext()) {
-                int j = iterator.next();
-
-                if (i == j || equals(map[i], map[j])) {
-                    answer.add(strs[j]);
-                    iterator.remove();
-                }
+        for (StringWrapper wrapper : arr) {
+            if (prev == null || prev.compareTo(wrapper) != 0) {
+                ans.add(answer = new ArrayList<>());
             }
 
-            if (answer.isEmpty()) {
-                continue;
-            }
-
-            ans.add(answer);
+            answer.add(wrapper.toString());
+            prev = wrapper;
         }
 
         return ans;
+    }
+
+    public static void main(String[] args) {
+        String[] strs = { "hhhhu", "tttti", "tttit", "hhhuh", "hhuhh", "tittt" };
+        Solution solution = new Solution();
+        System.out.println(solution.groupAnagrams(strs));
     }
 }
