@@ -9,7 +9,7 @@ public class Solution {
         int next = nums[index + 1];
 
         if (next > cur) {
-            return Math.max(recLen(nums, index + 1, index, seq), recLen(nums, index + 1, index, seq + 1));
+            return Math.max(recLen(nums, index + 1, index, seq + 1), recLen(nums, index + 1, last, seq));
         } else {
             return recLen(nums, index + 1, last, seq);
         }
